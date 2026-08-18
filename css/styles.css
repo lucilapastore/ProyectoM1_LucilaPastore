@@ -1,19 +1,262 @@
-* {
+/* ==========================================================================
+   Generador de Paletas Interactivo — Colorfly Studio
+   ==========================================================================
+   Idea de diseño: la app es una herramienta de color, así que el "chrome"
+   (fondo, tarjetas, botones) usa una paleta neutra deliberadamente discreta.
+   Los colores generados por el usuario son los protagonistas visuales;
+   nada acá debería competir con ellos.
+   ========================================================================== */
+
+/* ---- Reset básico ---- */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+}
+
+/* ---- Design tokens ---- */
+:root {
+  /* Color: neutro para el chrome + un solo acento */
+  --color-bg: #f4f5f8;
+  --color-surface: #ffffff;
+  --color-border: #e3e4ea;
+  --color-ink: #1b1c22;
+  --color-ink-muted: #6b6d7a;
+  --color-accent: #4f3df5;
+  --color-accent-hover: #3f30d6;
+
+  /* Tipografía: display geométrica + texto utilitario + mono para códigos */
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Espaciado */
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Otros */
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-sm:
+    0 1px 2px rgba(20, 20, 30, 0.06), 0 1px 1px rgba(20, 20, 30, 0.04);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
   line-height: 1.5;
 }
 
-header, footer {
-  padding: 1rem;
-  text-align: center;
+/* ---- Utilidad de accesibilidad ----
+   Oculta visualmente un elemento sin sacarlo del flujo de lectores de
+   pantalla. Se usa en los <h2> de las secciones: dan estructura semántica
+   correcta sin duplicar visualmente lo que ya comunica el diseño. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
+/* ---- Foco visible ----
+   Requisito obligatorio de la consigna: se ve claramente al navegar con
+   teclado, pero no ensucia la interfaz en clicks de mouse. */
+:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ---- Header ---- */
+.site-header {
+  text-align: center;
+  padding: var(--space-8) var(--space-4) var(--space-6);
+}
+
+.site-header h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--space-2);
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  color: var(--color-ink-muted);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* ---- Layout principal ---- */
 main {
-  padding: 1rem;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 var(--space-4) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ---- Controles ---- */
+.controls {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.control-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+#palette-size {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  min-width: 160px;
+}
+
+.btn-primary {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: var(--space-3) var(--space-6);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  color: #ffffff;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.btn-primary:hover {
+  background: var(--color-accent-hover);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+}
+
+/* ---- Paleta generada ----
+   Grid responsivo: se acomoda solo según cuántas tarjetas haya (6, 8 o 9). */
+.palette-container {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-4);
+}
+
+/* Cada color como una ficha de pintura: swatch grande + código separado.
+   El código NUNCA va escrito encima del color aleatorio — así el contraste
+   texto/fondo está garantizado sin importar qué color se genere. */
+.color-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.color-swatch {
+  height: 140px;
+  width: 100%;
+  /* El color de fondo real lo asigna el JS en el paso 4 (inline style). */
+}
+
+.color-info {
+  padding: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.color-code {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-ink);
+}
+
+/* ---- Toast / microfeedback ----
+   El JS controla la visibilidad con el atributo [hidden] del HTML, no con
+   una clase — simple y sin pelear con transiciones de display:none. */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-6);
+  transform: translateX(-50%);
+  background: var(--color-ink);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---- Footer ---- */
+.site-footer {
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+  color: var(--color-ink-muted);
+  font-size: 0.85rem;
+}
+
+/* ---- Accesibilidad: respeta la preferencia de movimiento reducido ---- */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ---- Responsive básico ---- */
+@media (max-width: 480px) {
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-primary {
+    width: 100%;
+  }
 }
