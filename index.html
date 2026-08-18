@@ -1,24 +1,71 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Proyecto M1 - Lucila Pastore</title>
-  <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-  <header>
-    <h1>Proyecto M1</h1>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generador de Paletas Interactivo | Colorfly Studio</title>
 
-  <main>
-    <p>Página inicial del proyecto.</p>
-  </main>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
 
-  <footer>
-    <p>&copy; 2026 Lucila Pastore</p>
-  </footer>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>Generador de Paletas Interactivo</h1>
+      <p class="subtitle">
+        Colorfly Studio &mdash; propuestas visuales rápidas para tus proyectos
+        de branding
+      </p>
+    </header>
 
-  <script src="js/main.js"></script>
-</body>
+    <main>
+      <!-- Controles: tamaño de paleta + botón principal -->
+      <section class="controls" aria-labelledby="controls-heading">
+        <h2 id="controls-heading" class="visually-hidden">
+          Controles de generación
+        </h2>
+
+        <div class="control-group">
+          <label for="palette-size">Cantidad de colores</label>
+          <select id="palette-size" name="palette-size">
+            <option value="6">6 colores</option>
+            <option value="8">8 colores</option>
+            <option value="9">9 colores</option>
+          </select>
+        </div>
+
+        <button type="button" id="generate-btn" class="btn-primary">
+          Generar paleta
+        </button>
+      </section>
+
+      <!-- Resultado: tarjetas de color generadas dinámicamente por JS -->
+      <section class="palette-section" aria-labelledby="palette-heading">
+        <h2 id="palette-heading" class="visually-hidden">Paleta generada</h2>
+        <ul id="palette-container" class="palette-container">
+          <!-- Las tarjetas de color (<li>) se insertan acá vía JavaScript -->
+        </ul>
+      </section>
+
+      <!-- Región para microfeedback (toast), anunciada a lectores de pantalla -->
+      <div
+        id="toast"
+        class="toast"
+        role="status"
+        aria-live="polite"
+        hidden
+      ></div>
+    </main>
+
+    <footer class="site-footer">
+      <p>Proyecto Integrador &mdash; Módulo 1, Henry</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+  </body>
 </html>
