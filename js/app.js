@@ -10,8 +10,13 @@
 /* ---- Referencias al DOM ---- */
 const sizeSelect = document.getElementById("palette-size");
 const generateBtn = document.getElementById("generate-btn");
+const saveBtn = document.getElementById("save-btn");
 const paletteContainer = document.getElementById("palette-container");
+const savedList = document.getElementById("saved-palettes-list");
 const toastEl = document.getElementById("toast");
+
+// Paleta actualmente mostrada en pantalla — la necesita el botón "Guardar".
+let currentPalette = [];
 
 /* ---- Generación de color ---- */
 
@@ -98,6 +103,126 @@ function renderPalette(colors) {
   paletteContainer.appendChild(fragment);
 }
 
+/* ---- Guardado en localStorage ----
+   Persiste paletas completas (no solo la última) para que el usuario pueda
+   volver a cargarlas después, incluso si cierra el navegador. */
+
+const STORAGE_KEY = "colorfly-saved-palettes";
+const MAX_SAVED_PALETTES = 12;
+
+function getSavedPalettes() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (error) {
+    console.warn("No se pudieron leer las paletas guardadas:", error);
+    return [];
+  }
+}
+
+function setSavedPalettes(palettes) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(palettes));
+  } catch (error) {
+    console.warn("No se pudo guardar en localStorage:", error);
+  }
+}
+
+function formatSavedDate(isoString) {
+  return new Date(isoString).toLocaleString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function savePalette(colors) {
+  const palettes = getSavedPalettes();
+  const entry = {
+    id: Date.now(),
+    savedAt: new Date().toISOString(),
+    colors,
+  };
+
+  const updated = [entry, ...palettes].slice(0, MAX_SAVED_PALETTES);
+  setSavedPalettes(updated);
+  renderSavedPalettes();
+}
+
+function deleteSavedPalette(id) {
+  const palettes = getSavedPalettes().filter((entry) => entry.id !== id);
+  setSavedPalettes(palettes);
+  renderSavedPalettes();
+  showToast("Paleta eliminada");
+}
+
+function loadSavedPalette(id) {
+  const entry = getSavedPalettes().find((item) => item.id === id);
+  if (!entry) return;
+
+  currentPalette = entry.colors;
+  renderPalette(entry.colors);
+  sizeSelect.value = String(entry.colors.length);
+  showToast("Paleta cargada");
+}
+
+function createSavedItem(entry) {
+  const item = document.createElement("li");
+  item.className = "saved-palette-item";
+
+  const strip = document.createElement("div");
+  strip.className = "saved-swatch-strip";
+  entry.colors.forEach((color) => {
+    const dot = document.createElement("span");
+    dot.className = "saved-swatch";
+    dot.style.backgroundColor = color.hex;
+    strip.appendChild(dot);
+  });
+
+  const meta = document.createElement("span");
+  meta.className = "saved-meta";
+  meta.textContent = formatSavedDate(entry.savedAt);
+
+  const loadBtn = document.createElement("button");
+  loadBtn.type = "button";
+  loadBtn.className = "saved-action";
+  loadBtn.textContent = "Cargar";
+  loadBtn.dataset.action = "load";
+  loadBtn.dataset.id = entry.id;
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.type = "button";
+  deleteBtn.className = "saved-action saved-action--delete";
+  deleteBtn.textContent = "Eliminar";
+  deleteBtn.setAttribute(
+    "aria-label",
+    `Eliminar paleta guardada (${meta.textContent})`,
+  );
+  deleteBtn.dataset.action = "delete";
+  deleteBtn.dataset.id = entry.id;
+
+  item.append(strip, meta, loadBtn, deleteBtn);
+  return item;
+}
+
+function renderSavedPalettes() {
+  const palettes = getSavedPalettes();
+  savedList.innerHTML = "";
+
+  if (palettes.length === 0) {
+    const emptyState = document.createElement("li");
+    emptyState.className = "saved-empty";
+    emptyState.textContent = "Todavía no guardaste ninguna paleta.";
+    savedList.appendChild(emptyState);
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  palettes.forEach((entry) => fragment.appendChild(createSavedItem(entry)));
+  savedList.appendChild(fragment);
+}
+
 /* ---- Microfeedback (toast) ----
    Usa el atributo [hidden] del HTML, que ya tiene role="status" y
    aria-live="polite" — el mensaje se anuncia solo a lectores de pantalla. */
@@ -114,13 +239,44 @@ function showToast(message) {
   }, 2500);
 }
 
-/* ---- Evento principal ---- */
+/* ---- Eventos ---- */
 
 function handleGenerateClick() {
   const size = parseInt(sizeSelect.value, 10);
   const palette = generatePalette(size);
+  currentPalette = palette;
   renderPalette(palette);
   showToast(`Paleta de ${size} colores generada`);
 }
 
+function handleSaveClick() {
+  if (currentPalette.length === 0) {
+    showToast("Generá una paleta antes de guardarla");
+    return;
+  }
+  savePalette(currentPalette);
+  showToast("Paleta guardada");
+}
+
+// Delegación de eventos: un solo listener para "Cargar" y "Eliminar",
+// sin importar cuántos ítems haya en la lista de guardadas.
+function handleSavedListClick(event) {
+  const button = event.target.closest("[data-action]");
+  if (!button) return;
+
+  const id = Number(button.dataset.id);
+  if (button.dataset.action === "load") {
+    loadSavedPalette(id);
+  } else if (button.dataset.action === "delete") {
+    deleteSavedPalette(id);
+  }
+}
+
 generateBtn.addEventListener("click", handleGenerateClick);
+saveBtn.addEventListener("click", handleSaveClick);
+savedList.addEventListener("click", handleSavedListClick);
+
+/* ---- Estado inicial ----
+   Si ya hay paletas guardadas de una sesión anterior, se muestran apenas
+   carga la página. */
+renderSavedPalettes();

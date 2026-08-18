@@ -226,6 +226,102 @@ main {
   color: var(--color-ink-muted);
 }
 
+/* ---- Botón secundario (Guardar) ---- */
+.btn-secondary {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: var(--space-3) var(--space-6);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-accent);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(79, 61, 245, 0.08);
+}
+
+/* ---- Paletas guardadas (localStorage) ---- */
+.saved-section h2 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 var(--space-3);
+}
+
+.saved-palettes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.saved-empty {
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+}
+
+.saved-palette-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+
+.saved-swatch-strip {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.saved-swatch {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--color-border);
+  margin-left: -1px;
+}
+
+.saved-swatch:first-child {
+  margin-left: 0;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.saved-swatch:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.saved-meta {
+  font-size: 0.8rem;
+  color: var(--color-ink-muted);
+  flex-grow: 1;
+}
+
+.saved-action {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.saved-action--delete {
+  color: #b3261e;
+  border-color: #f0d3d1;
+}
+
 /* ---- Toast / microfeedback ----
    El JS controla la visibilidad con el atributo [hidden] del HTML, no con
    una clase — simple y sin pelear con transiciones de display:none. */

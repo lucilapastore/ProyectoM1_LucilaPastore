@@ -42,6 +42,10 @@
         <button type="button" id="generate-btn" class="btn-primary">
           Generar paleta
         </button>
+
+        <button type="button" id="save-btn" class="btn-secondary">
+          Guardar paleta
+        </button>
       </section>
 
       <!-- Resultado: tarjetas de color generadas dinámicamente por JS -->
@@ -49,6 +53,14 @@
         <h2 id="palette-heading" class="visually-hidden">Paleta generada</h2>
         <ul id="palette-container" class="palette-container">
           <!-- Las tarjetas de color (<li>) se insertan acá vía JavaScript -->
+        </ul>
+      </section>
+
+      <!-- Paletas guardadas en localStorage: persisten entre sesiones -->
+      <section class="saved-section" aria-labelledby="saved-heading">
+        <h2 id="saved-heading">Paletas guardadas</h2>
+        <ul id="saved-palettes-list" class="saved-palettes-list">
+          <!-- Se completa dinámicamente vía JS -->
         </ul>
       </section>
 
