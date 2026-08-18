@@ -205,15 +205,25 @@ main {
 .color-info {
   padding: var(--space-3);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: 2px;
 }
 
 .color-code {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+}
+
+/* Formato principal, siempre visible (requisito obligatorio de la consigna) */
+.color-code--hex {
+  font-size: 0.9rem;
+  font-weight: 600;
   color: var(--color-ink);
+}
+
+/* Segundo formato requerido por la consigna, en tono más sutil */
+.color-code--hsl {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
 }
 
 /* ---- Toast / microfeedback ----
