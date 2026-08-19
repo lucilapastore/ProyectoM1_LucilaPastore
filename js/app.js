@@ -8,35 +8,35 @@
    ========================================================================== */
 
 /* ---- Referencias al DOM ---- */
-const sizeSelect = document.getElementById("palette-size");
-const generateBtn = document.getElementById("generate-btn");
-const saveBtn = document.getElementById("save-btn");
-const paletteContainer = document.getElementById("palette-container");
-const savedList = document.getElementById("saved-palettes-list");
-const toastEl = document.getElementById("toast");
+const selectorTamanio = document.getElementById("palette-size");
+const botonGenerar = document.getElementById("generate-btn");
+const botonGuardar = document.getElementById("save-btn");
+const contenedorPaleta = document.getElementById("palette-container");
+const listaGuardadas = document.getElementById("saved-palettes-list");
+const elementoToast = document.getElementById("toast");
 
 // Paleta actualmente mostrada en pantalla — la necesita el botón "Guardar".
-let currentPalette = [];
+let paletaActual = [];
 
 /* ---- Generación de color ---- */
 
-// Entero aleatorio entre min y max, ambos inclusive.
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+// Entero aleatorio entre minimo y maximo, ambos inclusive.
+function obtenerEnteroAleatorio(minimo, maximo) {
+  return Math.floor(Math.random() * (maximo - minimo + 1)) + minimo;
 }
 
 // Saturación y luminosidad acotadas a rangos "agradables": evita colores
 // demasiado grises (saturación muy baja) o demasiado oscuros/claros
 // (luminosidad extrema), que además complicarían la legibilidad.
-function generateRandomHSL() {
-  const h = getRandomInt(0, 359);
-  const s = getRandomInt(60, 90);
-  const l = getRandomInt(40, 65);
+function generarHSLAleatorio() {
+  const h = obtenerEnteroAleatorio(0, 359);
+  const s = obtenerEnteroAleatorio(60, 90);
+  const l = obtenerEnteroAleatorio(40, 65);
   return { h, s, l };
 }
 
 // Conversión HSL -> HEX (algoritmo estándar).
-function hslToHex(h, s, l) {
+function hslAHex(h, s, l) {
   s /= 100;
   l /= 100;
 
@@ -44,92 +44,92 @@ function hslToHex(h, s, l) {
   const a = s * Math.min(l, 1 - l);
   const f = (n) =>
     l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-  const toHex = (x) =>
+  const aHexadecimal = (x) =>
     Math.round(255 * x)
       .toString(16)
       .padStart(2, "0");
 
-  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`.toUpperCase();
+  return `#${aHexadecimal(f(0))}${aHexadecimal(f(8))}${aHexadecimal(f(4))}`.toUpperCase();
 }
 
 // Un color = sus dos formatos, listos para mostrar.
-function generateColor() {
-  const { h, s, l } = generateRandomHSL();
+function generarColor() {
+  const { h, s, l } = generarHSLAleatorio();
   return {
     hsl: `hsl(${h}, ${s}%, ${l}%)`,
-    hex: hslToHex(h, s, l),
+    hex: hslAHex(h, s, l),
   };
 }
 
-function generatePalette(size) {
-  const palette = [];
-  for (let i = 0; i < size; i++) {
-    palette.push(generateColor());
+function generarPaleta(tamanio) {
+  const paleta = [];
+  for (let i = 0; i < tamanio; i++) {
+    paleta.push(generarColor());
   }
-  return palette;
+  return paleta;
 }
 
 /* ---- Render ---- */
 
-function createColorCard(color) {
-  const card = document.createElement("li");
-  card.className = "color-card";
+function crearTarjetaColor(color) {
+  const tarjeta = document.createElement("li");
+  tarjeta.className = "color-card";
 
-  const swatch = document.createElement("div");
-  swatch.className = "color-swatch";
-  swatch.style.backgroundColor = color.hex;
+  const muestra = document.createElement("div");
+  muestra.className = "color-swatch";
+  muestra.style.backgroundColor = color.hex;
 
-  const info = document.createElement("div");
-  info.className = "color-info";
+  const informacion = document.createElement("div");
+  informacion.className = "color-info";
 
-  const hexLabel = document.createElement("span");
-  hexLabel.className = "color-code color-code--hex";
-  hexLabel.textContent = color.hex;
+  const etiquetaHex = document.createElement("span");
+  etiquetaHex.className = "color-code color-code--hex";
+  etiquetaHex.textContent = color.hex;
 
-  const hslLabel = document.createElement("span");
-  hslLabel.className = "color-code color-code--hsl";
-  hslLabel.textContent = color.hsl;
+  const etiquetaHsl = document.createElement("span");
+  etiquetaHsl.className = "color-code color-code--hsl";
+  etiquetaHsl.textContent = color.hsl;
 
-  info.append(hexLabel, hslLabel);
-  card.append(swatch, info);
+  informacion.append(etiquetaHex, etiquetaHsl);
+  tarjeta.append(muestra, informacion);
 
-  return card;
+  return tarjeta;
 }
 
-function renderPalette(colors) {
-  paletteContainer.innerHTML = "";
-  const fragment = document.createDocumentFragment();
-  colors.forEach((color) => fragment.appendChild(createColorCard(color)));
-  paletteContainer.appendChild(fragment);
+function renderizarPaleta(colores) {
+  contenedorPaleta.innerHTML = "";
+  const fragmento = document.createDocumentFragment();
+  colores.forEach((color) => fragmento.appendChild(crearTarjetaColor(color)));
+  contenedorPaleta.appendChild(fragmento);
 }
 
 /* ---- Guardado en localStorage ----
    Persiste paletas completas (no solo la última) para que el usuario pueda
    volver a cargarlas después, incluso si cierra el navegador. */
 
-const STORAGE_KEY = "colorfly-saved-palettes";
-const MAX_SAVED_PALETTES = 12;
+const CLAVE_ALMACENAMIENTO = "colorfly-saved-palettes";
+const MAX_PALETAS_GUARDADAS = 12;
 
-function getSavedPalettes() {
+function obtenerPaletasGuardadas() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const datosCrudos = localStorage.getItem(CLAVE_ALMACENAMIENTO);
+    return datosCrudos ? JSON.parse(datosCrudos) : [];
   } catch (error) {
     console.warn("No se pudieron leer las paletas guardadas:", error);
     return [];
   }
 }
 
-function setSavedPalettes(palettes) {
+function establecerPaletasGuardadas(paletas) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(palettes));
+    localStorage.setItem(CLAVE_ALMACENAMIENTO, JSON.stringify(paletas));
   } catch (error) {
     console.warn("No se pudo guardar en localStorage:", error);
   }
 }
 
-function formatSavedDate(isoString) {
-  return new Date(isoString).toLocaleString("es-AR", {
+function formatearFechaGuardado(cadenaIso) {
+  return new Date(cadenaIso).toLocaleString("es-AR", {
     day: "2-digit",
     month: "2-digit",
     hour: "2-digit",
@@ -137,146 +137,146 @@ function formatSavedDate(isoString) {
   });
 }
 
-function savePalette(colors) {
-  const palettes = getSavedPalettes();
-  const entry = {
+function guardarPaleta(colores) {
+  const paletas = obtenerPaletasGuardadas();
+  const entrada = {
     id: Date.now(),
     savedAt: new Date().toISOString(),
-    colors,
+    colors: colores,
   };
 
-  const updated = [entry, ...palettes].slice(0, MAX_SAVED_PALETTES);
-  setSavedPalettes(updated);
-  renderSavedPalettes();
+  const actualizadas = [entrada, ...paletas].slice(0, MAX_PALETAS_GUARDADAS);
+  establecerPaletasGuardadas(actualizadas);
+  renderizarPaletasGuardadas();
 }
 
-function deleteSavedPalette(id) {
-  const palettes = getSavedPalettes().filter((entry) => entry.id !== id);
-  setSavedPalettes(palettes);
-  renderSavedPalettes();
-  showToast("Paleta eliminada");
+function eliminarPaletaGuardada(id) {
+  const paletas = obtenerPaletasGuardadas().filter((entrada) => entrada.id !== id);
+  establecerPaletasGuardadas(paletas);
+  renderizarPaletasGuardadas();
+  mostrarToast("Paleta eliminada");
 }
 
-function loadSavedPalette(id) {
-  const entry = getSavedPalettes().find((item) => item.id === id);
-  if (!entry) return;
+function cargarPaletaGuardada(id) {
+  const entrada = obtenerPaletasGuardadas().find((elemento) => elemento.id === id);
+  if (!entrada) return;
 
-  currentPalette = entry.colors;
-  renderPalette(entry.colors);
-  sizeSelect.value = String(entry.colors.length);
-  showToast("Paleta cargada");
+  paletaActual = entrada.colors;
+  renderizarPaleta(entrada.colors);
+  selectorTamanio.value = String(entrada.colors.length);
+  mostrarToast("Paleta cargada");
 }
 
-function createSavedItem(entry) {
-  const item = document.createElement("li");
-  item.className = "saved-palette-item";
+function crearItemGuardado(entrada) {
+  const elemento = document.createElement("li");
+  elemento.className = "saved-palette-item";
 
-  const strip = document.createElement("div");
-  strip.className = "saved-swatch-strip";
-  entry.colors.forEach((color) => {
-    const dot = document.createElement("span");
-    dot.className = "saved-swatch";
-    dot.style.backgroundColor = color.hex;
-    strip.appendChild(dot);
+  const franja = document.createElement("div");
+  franja.className = "saved-swatch-strip";
+  entrada.colors.forEach((color) => {
+    const punto = document.createElement("span");
+    punto.className = "saved-swatch";
+    punto.style.backgroundColor = color.hex;
+    franja.appendChild(punto);
   });
 
-  const meta = document.createElement("span");
-  meta.className = "saved-meta";
-  meta.textContent = formatSavedDate(entry.savedAt);
+  const metadatos = document.createElement("span");
+  metadatos.className = "saved-meta";
+  metadatos.textContent = formatearFechaGuardado(entrada.savedAt);
 
-  const loadBtn = document.createElement("button");
-  loadBtn.type = "button";
-  loadBtn.className = "saved-action";
-  loadBtn.textContent = "Cargar";
-  loadBtn.dataset.action = "load";
-  loadBtn.dataset.id = entry.id;
+  const botonCargar = document.createElement("button");
+  botonCargar.type = "button";
+  botonCargar.className = "saved-action";
+  botonCargar.textContent = "Cargar";
+  botonCargar.dataset.action = "load";
+  botonCargar.dataset.id = entrada.id;
 
-  const deleteBtn = document.createElement("button");
-  deleteBtn.type = "button";
-  deleteBtn.className = "saved-action saved-action--delete";
-  deleteBtn.textContent = "Eliminar";
-  deleteBtn.setAttribute(
+  const botonEliminar = document.createElement("button");
+  botonEliminar.type = "button";
+  botonEliminar.className = "saved-action saved-action--delete";
+  botonEliminar.textContent = "Eliminar";
+  botonEliminar.setAttribute(
     "aria-label",
-    `Eliminar paleta guardada (${meta.textContent})`,
+    `Eliminar paleta guardada (${metadatos.textContent})`,
   );
-  deleteBtn.dataset.action = "delete";
-  deleteBtn.dataset.id = entry.id;
+  botonEliminar.dataset.action = "delete";
+  botonEliminar.dataset.id = entrada.id;
 
-  item.append(strip, meta, loadBtn, deleteBtn);
-  return item;
+  elemento.append(franja, metadatos, botonCargar, botonEliminar);
+  return elemento;
 }
 
-function renderSavedPalettes() {
-  const palettes = getSavedPalettes();
-  savedList.innerHTML = "";
+function renderizarPaletasGuardadas() {
+  const paletas = obtenerPaletasGuardadas();
+  listaGuardadas.innerHTML = "";
 
-  if (palettes.length === 0) {
-    const emptyState = document.createElement("li");
-    emptyState.className = "saved-empty";
-    emptyState.textContent = "Todavía no guardaste ninguna paleta.";
-    savedList.appendChild(emptyState);
+  if (paletas.length === 0) {
+    const estadoVacio = document.createElement("li");
+    estadoVacio.className = "saved-empty";
+    estadoVacio.textContent = "Todavía no guardaste ninguna paleta.";
+    listaGuardadas.appendChild(estadoVacio);
     return;
   }
 
-  const fragment = document.createDocumentFragment();
-  palettes.forEach((entry) => fragment.appendChild(createSavedItem(entry)));
-  savedList.appendChild(fragment);
+  const fragmento = document.createDocumentFragment();
+  paletas.forEach((entrada) => fragmento.appendChild(crearItemGuardado(entrada)));
+  listaGuardadas.appendChild(fragmento);
 }
 
 /* ---- Microfeedback (toast) ----
    Usa el atributo [hidden] del HTML, que ya tiene role="status" y
    aria-live="polite" — el mensaje se anuncia solo a lectores de pantalla. */
 
-let toastTimeoutId = null;
+let idTemporizadorToast = null;
 
-function showToast(message) {
-  toastEl.textContent = message;
-  toastEl.hidden = false;
+function mostrarToast(mensaje) {
+  elementoToast.textContent = mensaje;
+  elementoToast.hidden = false;
 
-  if (toastTimeoutId) clearTimeout(toastTimeoutId);
-  toastTimeoutId = setTimeout(() => {
-    toastEl.hidden = true;
+  if (idTemporizadorToast) clearTimeout(idTemporizadorToast);
+  idTemporizadorToast = setTimeout(() => {
+    elementoToast.hidden = true;
   }, 2500);
 }
 
 /* ---- Eventos ---- */
 
-function handleGenerateClick() {
-  const size = parseInt(sizeSelect.value, 10);
-  const palette = generatePalette(size);
-  currentPalette = palette;
-  renderPalette(palette);
-  showToast(`Paleta de ${size} colores generada`);
+function manejarClicGenerar() {
+  const tamanio = parseInt(selectorTamanio.value, 10);
+  const paleta = generarPaleta(tamanio);
+  paletaActual = paleta;
+  renderizarPaleta(paleta);
+  mostrarToast(`Paleta de ${tamanio} colores generada`);
 }
 
-function handleSaveClick() {
-  if (currentPalette.length === 0) {
-    showToast("Generá una paleta antes de guardarla");
+function manejarClicGuardar() {
+  if (paletaActual.length === 0) {
+    mostrarToast("Generá una paleta antes de guardarla");
     return;
   }
-  savePalette(currentPalette);
-  showToast("Paleta guardada");
+  guardarPaleta(paletaActual);
+  mostrarToast("Paleta guardada");
 }
 
 // Delegación de eventos: un solo listener para "Cargar" y "Eliminar",
 // sin importar cuántos ítems haya en la lista de guardadas.
-function handleSavedListClick(event) {
-  const button = event.target.closest("[data-action]");
-  if (!button) return;
+function manejarClicListaGuardadas(evento) {
+  const boton = evento.target.closest("[data-action]");
+  if (!boton) return;
 
-  const id = Number(button.dataset.id);
-  if (button.dataset.action === "load") {
-    loadSavedPalette(id);
-  } else if (button.dataset.action === "delete") {
-    deleteSavedPalette(id);
+  const id = Number(boton.dataset.id);
+  if (boton.dataset.action === "load") {
+    cargarPaletaGuardada(id);
+  } else if (boton.dataset.action === "delete") {
+    eliminarPaletaGuardada(id);
   }
 }
 
-generateBtn.addEventListener("click", handleGenerateClick);
-saveBtn.addEventListener("click", handleSaveClick);
-savedList.addEventListener("click", handleSavedListClick);
+botonGenerar.addEventListener("click", manejarClicGenerar);
+botonGuardar.addEventListener("click", manejarClicGuardar);
+listaGuardadas.addEventListener("click", manejarClicListaGuardadas);
 
 /* ---- Estado inicial ----
    Si ya hay paletas guardadas de una sesión anterior, se muestran apenas
    carga la página. */
-renderSavedPalettes();
+renderizarPaletasGuardadas();
