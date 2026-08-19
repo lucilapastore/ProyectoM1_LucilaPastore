@@ -1,89 +1,125 @@
 # Documentación del uso de IA
 
-Este proyecto se desarrolló con apoyo de **Claude** (Anthropic), usado desde
-el chat web para planificación, diseño y generación de código, y desde
-**Claude Code** para las operaciones de terminal (Git, GitHub CLI).
+Siguiendo lo aprendido en el módulo, se usó **Claude** (Anthropic) como
+apoyo durante todo el desarrollo: desde el chat web para planificación,
+diseño y generación de código, y **Claude Code** para las operaciones de
+terminal (Git, GitHub CLI). Esta documentación detalla los prompts
+utilizados en cada etapa y cómo influyeron en las decisiones técnicas y de
+organización del proyecto.
 
 > 📸 Agregar acá capturas del chat que respalden los prompts listados abajo
 > (o linkear a la carpeta de Drive donde estén).
 
-## Cómo se usó la IA en cada etapa
+## Prompts utilizados y su impacto en el desarrollo
 
 ### 1. Planificación del trabajo
 
-**Prompt:** *"Este es el calendario del Módulo 1 y antes del jueves debo
-presentar el trabajo integrador del Módulo 1"* (con captura del calendario)
+**Prompt:**
+> "Este es el calendario del Módulo 1 y antes del jueves debo presentar el
+> trabajo integrador del Módulo 1" (con captura del calendario, seguido de
+> la consigna oficial y la rúbrica en PDF)
 
-**Resultado:** a partir del calendario y, después, de la consigna oficial y
-la rúbrica (subidas como PDF), se armó un plan de trabajo dividido en 8
-bloques con horarios, pensado para cubrir primero el MVP obligatorio y
-dejar los extras y la documentación para el final — siguiendo la
-recomendación de la guía del proyecto de "priorizar que el botón principal
-y la generación de paletas funcionen correctamente" antes que nada.
+**Cómo influyó en el desarrollo:** a partir de la consigna y la rúbrica se
+armó un plan de trabajo dividido en 8 bloques con horarios, ordenado según
+la prioridad que marca la guía del proyecto: primero el MVP obligatorio
+(estructura, estilos, lógica, deploy) y recién después los extras y la
+documentación. Esta decisión de secuencia evitó el error común que
+advierte la propia guía: "priorizar extras antes de que el MVP funcione".
 
 ### 2. Estructura HTML
 
-**Prompt:** *"vamos con el paso 2"* (siguiendo el plan ya acordado)
+**Prompt:**
+> "vamos con el paso 2" (siguiendo el plan ya acordado, para la estructura
+> semántica de la app)
 
-**Resultado:** estructura semántica (`header`, `main`, `footer`, `section`)
-con el selector de tamaño, el botón principal y el contenedor de la paleta.
-Decisiones puntuales sugeridas por la IA y aceptadas: usar `<ul>` para el
-contenedor de colores (es una colección de ítems, no un `<div>` genérico),
-asociar el `<label>` al `<select>` explícitamente, y agregar una región
-`aria-live` para el toast desde el HTML, antes incluso de escribir el JS.
+**Cómo influyó en el desarrollo:** definió el uso de etiquetas semánticas
+(`header`, `main`, `footer`, `section`) en vez de `div` genéricos, aplicando
+directamente el objetivo del módulo de "estructurar documentos web
+utilizando etiquetas HTML5 semánticas". También se tomaron decisiones
+puntuales de accesibilidad desde este primer paso, no como agregado
+posterior: asociar cada `<label>` con su `<select>` mediante `for`/`id`, y
+declarar la región del toast con `aria-live="polite"` desde el HTML, antes
+de escribir una sola línea de JavaScript.
 
 ### 3. Diseño visual (CSS)
 
-**Prompt:** *"vamos con el paso 3"*
+**Prompt:**
+> "vamos con el paso 3"
 
-**Resultado:** paleta de color neutra para la interfaz (para no competir
-visualmente con los colores generados) y las tarjetas de color diseñadas
-como fichas de pintura, con el código separado del swatch para garantizar
-contraste de texto sin importar qué color aleatorio se genere. Se ajustó
-después (paso 4) para acomodar los dos formatos de color requeridos.
+**Cómo influyó en el desarrollo:** llevó a una decisión de diseño
+deliberada: usar una paleta de color neutra para toda la interfaz, para
+que los colores generados por el usuario —y no el "chrome" de la
+aplicación— fueran siempre el foco visual. De esa misma conversación salió
+el diseño de las tarjetas de color como fichas de pintura, con el código
+del color separado del swatch. Esta decisión resuelve de raíz un problema
+de accesibilidad: garantiza contraste de texto suficiente sin importar qué
+color aleatorio se genere, en vez de intentar calcular contraste dinámico
+color por color.
 
 ### 4. Lógica de generación de colores (JavaScript)
 
-**Prompt:** *"si"* (confirmando avanzar al paso 4 del plan)
+**Prompt:**
+> "si" (confirmando avanzar al paso 4: generación de colores, render
+> dinámico y microfeedback)
 
-**Resultado:** funciones para generar valores HSL aleatorios acotados a
-rangos agradables, conversión HSL → HEX, render dinámico de tarjetas según
-el tamaño elegido, y el sistema de toast para el microfeedback.
+**Cómo influyó en el desarrollo:** se implementaron funciones separadas y
+pequeñas para cada responsabilidad (generar HSL aleatorio, convertir a
+HEX, renderizar tarjetas, mostrar el toast), en línea con la buena
+práctica de la guía de "separar la lógica en funciones pequeñas" y "evitar
+código duplicado". La decisión de generar el color primero en HSL y
+convertirlo a HEX —en vez de generar ambos formatos por separado— vino
+directamente de la sugerencia de la IA, y evitó tener dos fuentes de
+verdad para un mismo color.
 
-### 5. Deploy
+### 5. Deploy en GitHub Pages
 
-**Prompts:** *"como deployo a github pages?"*
+**Prompt:**
+> "como deployo a github pages?"
 
-**Resultado:** guía paso a paso para activar GitHub Pages desde
-Settings → Pages, más una alternativa por línea de comando (`gh api`) para
-hacerlo desde la terminal con Claude Code.
+**Cómo influyó en el desarrollo:** se decidió activar el deploy temprano
+(antes de terminar los extras), siguiendo la recomendación de probar en
+producción con tiempo de sobra para detectar errores. Esto también influyó
+en una decisión previa del HTML: usar rutas relativas sin barra inicial
+(`css/styles.css`, no `/css/styles.css`), necesario para que los archivos
+se sirvan correctamente desde un project page de GitHub Pages.
 
 ### 6. Extra credit: guardado en localStorage
 
-**Prompt:** selección de *"Guardado en localStorage"* entre las opciones de
-extra credit sugeridas.
+**Prompt:** selección de "Guardado en localStorage" entre las opciones de
+extra credit sugeridas por la IA.
 
-**Resultado:** sistema completo de guardar / cargar / eliminar paletas,
-persistido en `localStorage` con manejo de errores, y un tope de 12
-paletas guardadas para no dejar crecer la lista indefinidamente.
+**Cómo influyó en el desarrollo:** definió una funcionalidad completa de
+persistencia (guardar, cargar y eliminar paletas) aplicando conceptos del
+módulo sobre manipulación del DOM y manejo de eventos. También introdujo
+dos decisiones técnicas puntuales: usar delegación de eventos para la
+lista de guardadas (un solo listener para cualquier cantidad de ítems,
+en vez de uno por elemento) y envolver las operaciones de `localStorage`
+en `try/catch`, para que la app no se rompa si el storage está lleno o
+deshabilitado.
 
 ### 7. Flujo de trabajo con Git
 
-**Prompt:** *"por favor en cada paso que vamos haciendo, indicame cuando
-commitear y los commits messages"*
+**Prompt:**
+> "por favor en cada paso que vamos haciendo, indicame cuando commitear y
+> los commits messages"
 
-**Resultado:** a partir de ese pedido, cada paso del desarrollo cerró con
-comandos de `git add` / `git commit` listos para pegar, siguiendo la
-convención `tipo: descripción` (`feat`, `style`) pedida por la guía del
-proyecto — separando por ejemplo los ajustes de estilos de la lógica nueva
-en commits distintos.
+**Cómo influyó en el desarrollo:** a partir de este pedido, cada paso del
+desarrollo cerró con comandos de `git add` / `git commit` listos para
+usar, siguiendo la convención `tipo: descripción` (`feat`, `style`, `docs`)
+pedida por la guía del proyecto. Esto también llevó a separar en commits
+distintos cambios que, aunque se hicieron en el mismo momento, correspondían
+a responsabilidades distintas — por ejemplo, un ajuste de estilos CSS
+separado del commit de la lógica JS que lo necesitaba.
 
-## Reflexión sobre el uso de IA
+## Reflexión general
 
-La IA se usó como par de trabajo para tomar decisiones de diseño y
-arquitectura (por ejemplo, por qué separar el código HEX del swatch de
-color, o por qué usar delegación de eventos en la lista de guardadas), no
-solo para autocompletar código. Las decisiones técnicas quedaron
-documentadas en el `README.md` principal, y cada pieza de código generada
-se probó manualmente en el navegador antes de darla por válida y avanzar
-al siguiente paso.
+El uso de IA en este proyecto no se limitó a autocompletar código: se usó
+como apoyo para pensar decisiones de arquitectura y diseño (por qué
+separar el código HEX del swatch de color, por qué usar delegación de
+eventos, por qué generar en HSL y convertir a HEX en vez de generar ambos
+formatos por separado) y para mantener un flujo de Git ordenado desde el
+primer commit. Cada pieza de código sugerida se probó manualmente en el
+navegador antes de darla por válida, lo que permitió avanzar paso a paso
+entendiendo el flujo completo de desarrollo Frontend —estructura, estilos,
+lógica, versionado y despliegue— en vez de simplemente copiar una
+solución ya armada.
