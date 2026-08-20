@@ -188,6 +188,7 @@ main {
    texto/fondo está garantizado sin importar qué color se genere. */
 .color-card {
   position: relative;
+  cursor: pointer;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -202,9 +203,35 @@ main {
 }
 
 .color-swatch {
+  position: relative;
+  display: block;
   height: 140px;
   width: 100%;
-  /* El color de fondo real lo asigna el JS en el paso 4 (inline style). */
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  appearance: none;
+  /* El color de fondo real lo asigna el JS (inline style). */
+}
+
+.color-swatch::after {
+  content: "Copiar HEX";
+  position: absolute;
+  inset: auto 8px 8px auto;
+  background: rgba(27, 28, 34, 0.72);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 4px 8px;
+  border-radius: 999px;
+  opacity: 0;
+}
+
+.color-card:hover .color-swatch::after,
+.color-swatch:focus-visible::after {
+  opacity: 1;
 }
 
 .color-lock {

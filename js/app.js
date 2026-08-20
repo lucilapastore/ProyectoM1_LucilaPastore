@@ -109,11 +109,14 @@ function crearTarjetaColor(color, indice) {
   const tarjeta = document.createElement("li");
   tarjeta.className = color.bloqueado ? "color-card color-card--locked" : "color-card";
   tarjeta.style.setProperty("--indice", String(indice));
+  tarjeta.dataset.hex = color.hex;
   tarjeta.dataset.indice = String(indice);
 
-  const muestra = document.createElement("div");
+  const muestra = document.createElement("button");
+  muestra.type = "button";
   muestra.className = "color-swatch";
   muestra.style.backgroundColor = color.hex;
+  muestra.setAttribute("aria-label", `Copiar código ${color.hex}`);
 
   const informacion = document.createElement("div");
   informacion.className = "color-info";
@@ -155,6 +158,38 @@ function actualizarTarjetaBloqueo(indice) {
     color.bloqueado ? "Desbloquear color" : "Bloquear color",
   );
   boton.innerHTML = color.bloqueado ? ICONO_CANDADO_CERRADO : ICONO_CANDADO_ABIERTO;
+}
+
+async function copiarAlPortapapeles(texto) {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(texto);
+      return true;
+    } catch (error) {
+      console.warn("No se pudo copiar al portapapeles:", error);
+    }
+  }
+
+  try {
+    const campo = document.createElement("textarea");
+    campo.value = texto;
+    campo.setAttribute("readonly", "");
+    campo.style.position = "fixed";
+    campo.style.left = "-9999px";
+    document.body.appendChild(campo);
+    campo.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(campo);
+    return ok;
+  } catch (error) {
+    console.warn("No se pudo copiar al portapapeles:", error);
+    return false;
+  }
+}
+
+async function copiarHex(hex) {
+  const copiado = await copiarAlPortapapeles(hex);
+  mostrarToast(copiado ? `${hex} copiado` : "No se pudo copiar el código");
 }
 
 function alternarBloqueo(indice) {
@@ -325,9 +360,15 @@ function manejarClicGenerar() {
 
 function manejarClicPaleta(evento) {
   const botonBloqueo = evento.target.closest("[data-accion='bloquear']");
-  if (!botonBloqueo) return;
+  if (botonBloqueo) {
+    alternarBloqueo(Number(botonBloqueo.dataset.indice));
+    return;
+  }
 
-  alternarBloqueo(Number(botonBloqueo.dataset.indice));
+  const tarjeta = evento.target.closest(".color-card");
+  if (!tarjeta) return;
+
+  copiarHex(tarjeta.dataset.hex);
 }
 
 function manejarClicGuardar() {

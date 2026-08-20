@@ -31,6 +31,7 @@ paleta a elección, y una propuesta de colores lista para explorar.
   historial de guardadas (hasta 12), cargar cualquiera de vuelta a la vista
   principal, o eliminarla. Persiste aunque cierres el navegador.
 - Bloqueo de colores: el candado conserva ese tono al generar de nuevo.
+- Copiar HEX al portapapeles haciendo clic en un color.
 
 ## Cómo usar la app
 
