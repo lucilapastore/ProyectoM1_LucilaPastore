@@ -13,8 +13,6 @@ paleta a elección, y una propuesta de colores lista para explorar.
 
 🔗 **Demo en vivo:** https://lucilapastore.github.io/ProyectoM1_LucilaPastore/
 
-📸 **Capturas y GIF del flujo:** [link a la carpeta de Google Drive]
-
 ## Funcionalidades
 
 **Obligatorias (consigna):**
