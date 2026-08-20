@@ -47,6 +47,7 @@ body {
   --radius-lg: 16px;
   --shadow-sm:
     0 1px 2px rgba(20, 20, 30, 0.06), 0 1px 1px rgba(20, 20, 30, 0.04);
+  --ease: 0.2s ease;
 }
 
 body {
@@ -166,6 +167,7 @@ main {
 
 .btn-primary:hover {
   background: var(--color-accent-hover);
+  transform: translateY(-1px);
 }
 
 .btn-primary:active {
@@ -196,6 +198,17 @@ main {
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
+  transition:
+    transform var(--ease),
+    box-shadow var(--ease);
+  animation: aparecer-tarjeta 0.35s ease backwards;
+  animation-delay: calc(var(--indice, 0) * 40ms);
+}
+
+.color-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 8px 24px rgba(20, 20, 30, 0.08), 0 2px 6px rgba(20, 20, 30, 0.04);
 }
 
 .color-card--locked {
@@ -227,11 +240,16 @@ main {
   padding: 4px 8px;
   border-radius: 999px;
   opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity var(--ease),
+    transform var(--ease);
 }
 
 .color-card:hover .color-swatch::after,
 .color-swatch:focus-visible::after {
   opacity: 1;
+  transform: translateY(0);
 }
 
 .color-lock {
@@ -249,6 +267,14 @@ main {
   color: var(--color-ink);
   cursor: pointer;
   box-shadow: var(--shadow-sm);
+  transition:
+    background-color var(--ease),
+    color var(--ease),
+    transform 0.12s ease;
+}
+
+.color-lock:hover {
+  transform: scale(1.06);
 }
 
 .color-lock[aria-pressed="true"] {
@@ -334,6 +360,7 @@ main {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-2) var(--space-3);
+  animation: aparecer-tarjeta 0.3s ease backwards;
 }
 
 .saved-swatch-strip {
@@ -375,6 +402,11 @@ main {
   background: var(--color-bg);
   color: var(--color-ink);
   cursor: pointer;
+  transition: background-color var(--ease);
+}
+
+.saved-action:hover {
+  background: #e8e9f0;
 }
 
 .saved-action--delete {
@@ -383,13 +415,12 @@ main {
 }
 
 /* ---- Toast / microfeedback ----
-   El JS controla la visibilidad con el atributo [hidden] del HTML, no con
-   una clase — simple y sin pelear con transiciones de display:none. */
+   [hidden] se deja en display:block para poder animar entrada/salida. */
 .toast {
   position: fixed;
   left: 50%;
   bottom: var(--space-6);
-  transform: translateX(-50%);
+  z-index: 20;
   background: var(--color-ink);
   color: #ffffff;
   font-family: var(--font-body);
@@ -397,6 +428,18 @@ main {
   padding: var(--space-3) var(--space-5);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.toast[hidden] {
+  display: block;
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px);
+  pointer-events: none;
 }
 
 /* ---- Footer ---- */
@@ -407,11 +450,29 @@ main {
   font-size: 0.85rem;
 }
 
+/* ---- Animaciones ---- */
+@keyframes aparecer-tarjeta {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ---- Accesibilidad: respeta la preferencia de movimiento reducido ---- */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     transition: none !important;
     animation: none !important;
+  }
+
+  .toast[hidden] {
+    display: none;
   }
 }
 

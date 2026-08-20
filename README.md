@@ -32,6 +32,7 @@ paleta a elección, y una propuesta de colores lista para explorar.
   principal, o eliminarla. Persiste aunque cierres el navegador.
 - Bloqueo de colores: el candado conserva ese tono al generar de nuevo.
 - Copiar HEX al portapapeles haciendo clic en un color.
+- Animaciones sutiles en tarjetas, botones, candado y toast.
 
 ## Cómo usar la app
 
