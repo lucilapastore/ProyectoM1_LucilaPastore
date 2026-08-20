@@ -33,6 +33,7 @@ paleta a elección, y una propuesta de colores lista para explorar.
 - Bloqueo de colores: el candado conserva ese tono al generar de nuevo.
 - Copiar HEX al portapapeles haciendo clic en un color.
 - Animaciones sutiles en tarjetas, botones, candado y toast.
+- Mejoras visuales de UI: estados vacíos, títulos visibles y hover más claro.
 
 ## Cómo usar la app
 

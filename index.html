@@ -50,9 +50,17 @@
 
       <!-- Resultado: tarjetas de color generadas dinámicamente por JS -->
       <section class="palette-section" aria-labelledby="palette-heading">
-        <h2 id="palette-heading" class="visually-hidden">Paleta generada</h2>
+        <div class="section-heading">
+          <h2 id="palette-heading">Paleta actual</h2>
+          <p class="section-hint">
+            Clic en un color para copiar el HEX. El candado lo conserva al
+            generar de nuevo.
+          </p>
+        </div>
         <ul id="palette-container" class="palette-container">
-          <!-- Las tarjetas de color (<li>) se insertan acá vía JavaScript -->
+          <li class="palette-empty">
+            Elegí un tamaño y generá tu primera paleta.
+          </li>
         </ul>
       </section>
 
