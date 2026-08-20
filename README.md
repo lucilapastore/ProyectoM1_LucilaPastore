@@ -34,6 +34,8 @@ paleta a elección, y una propuesta de colores lista para explorar.
 - Copiar HEX al portapapeles haciendo clic en un color.
 - Animaciones sutiles en tarjetas, botones, candado y toast.
 - Mejoras visuales de UI: estados vacíos, títulos visibles y hover más claro.
+- Diseño responsive para tablet y celular.
+- Branding de Colorfly Studio: logo, nombre de agencia, favicon y footer.
 
 ## Cómo usar la app
 
@@ -70,6 +72,8 @@ No requiere instalación ni dependencias — es HTML, CSS y JS vanilla.
 │   └── styles.css
 ├── js/
 │   └── app.js
+├── img/
+│   └── logo.svg
 ├── docs/
 │   └── PROMPTS.md        # documentación del uso de IA
 └── README.md
