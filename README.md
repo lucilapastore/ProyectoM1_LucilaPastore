@@ -30,6 +30,7 @@ paleta a elección, y una propuesta de colores lista para explorar.
 - Guardado de paletas en `localStorage`: guardar la paleta actual, ver un
   historial de guardadas (hasta 12), cargar cualquiera de vuelta a la vista
   principal, o eliminarla. Persiste aunque cierres el navegador.
+- Bloqueo de colores: el candado conserva ese tono al generar de nuevo.
 
 ## Cómo usar la app
 

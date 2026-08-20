@@ -18,6 +18,18 @@ const elementoToast = document.getElementById("toast");
 // Paleta actualmente mostrada en pantalla — la necesita el botón "Guardar".
 let paletaActual = [];
 
+const ICONO_CANDADO_CERRADO = `
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="currentColor" d="M17 9h-1V7A4 4 0 0 0 8 7v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Zm-7-2a2 2 0 1 1 4 0v2h-4V7Zm4 8.7V18h-2v-2.3a1.5 1.5 0 1 1 2 0Z"/>
+  </svg>
+`;
+
+const ICONO_CANDADO_ABIERTO = `
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="currentColor" d="M17 9h-6V7a3 3 0 0 1 5.8-1h2.1A5 5 0 0 0 9 7v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Zm-4 7.7V18h-2v-2.3a1.5 1.5 0 1 1 2 0Z"/>
+  </svg>
+`;
+
 /* ---- Generación de color ---- */
 
 // Entero aleatorio entre minimo y maximo, ambos inclusive.
@@ -58,22 +70,46 @@ function generarColor() {
   return {
     hsl: `hsl(${h}, ${s}%, ${l}%)`,
     hex: hslAHex(h, s, l),
+    bloqueado: false,
   };
 }
 
+// Conserva los colores con candado y solo regenera el resto.
 function generarPaleta(tamanio) {
   const paleta = [];
   for (let i = 0; i < tamanio; i++) {
-    paleta.push(generarColor());
+    const existente = paletaActual[i];
+    if (existente && existente.bloqueado) {
+      paleta.push(existente);
+    } else {
+      paleta.push(generarColor());
+    }
   }
   return paleta;
 }
 
 /* ---- Render ---- */
 
-function crearTarjetaColor(color) {
+function crearBotonBloqueo(color, indice) {
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.className = "color-lock";
+  boton.dataset.accion = "bloquear";
+  boton.dataset.indice = String(indice);
+  boton.setAttribute("aria-pressed", String(Boolean(color.bloqueado)));
+  boton.setAttribute(
+    "aria-label",
+    color.bloqueado ? "Desbloquear color" : "Bloquear color",
+  );
+  boton.innerHTML = color.bloqueado ? ICONO_CANDADO_CERRADO : ICONO_CANDADO_ABIERTO;
+  return boton;
+}
+
+function crearTarjetaColor(color, indice) {
   const tarjeta = document.createElement("li");
-  tarjeta.className = "color-card";
+  tarjeta.className = color.bloqueado ? "color-card color-card--locked" : "color-card";
+  tarjeta.style.setProperty("--indice", String(indice));
+  tarjeta.dataset.indice = String(indice);
 
   const muestra = document.createElement("div");
   muestra.className = "color-swatch";
@@ -91,7 +127,7 @@ function crearTarjetaColor(color) {
   etiquetaHsl.textContent = color.hsl;
 
   informacion.append(etiquetaHex, etiquetaHsl);
-  tarjeta.append(muestra, informacion);
+  tarjeta.append(muestra, crearBotonBloqueo(color, indice), informacion);
 
   return tarjeta;
 }
@@ -99,8 +135,35 @@ function crearTarjetaColor(color) {
 function renderizarPaleta(colores) {
   contenedorPaleta.innerHTML = "";
   const fragmento = document.createDocumentFragment();
-  colores.forEach((color) => fragmento.appendChild(crearTarjetaColor(color)));
+  colores.forEach((color, indice) => {
+    fragmento.appendChild(crearTarjetaColor(color, indice));
+  });
   contenedorPaleta.appendChild(fragmento);
+}
+
+function actualizarTarjetaBloqueo(indice) {
+  const color = paletaActual[indice];
+  const tarjeta = contenedorPaleta.querySelector(`[data-indice="${indice}"]`);
+  if (!color || !tarjeta) return;
+
+  tarjeta.classList.toggle("color-card--locked", color.bloqueado);
+
+  const boton = tarjeta.querySelector("[data-accion='bloquear']");
+  boton.setAttribute("aria-pressed", String(color.bloqueado));
+  boton.setAttribute(
+    "aria-label",
+    color.bloqueado ? "Desbloquear color" : "Bloquear color",
+  );
+  boton.innerHTML = color.bloqueado ? ICONO_CANDADO_CERRADO : ICONO_CANDADO_ABIERTO;
+}
+
+function alternarBloqueo(indice) {
+  const color = paletaActual[indice];
+  if (!color) return;
+
+  color.bloqueado = !color.bloqueado;
+  actualizarTarjetaBloqueo(indice);
+  mostrarToast(color.bloqueado ? "Color bloqueado" : "Color desbloqueado");
 }
 
 /* ---- Guardado en localStorage ----
@@ -161,9 +224,12 @@ function cargarPaletaGuardada(id) {
   const entrada = obtenerPaletasGuardadas().find((elemento) => elemento.id === id);
   if (!entrada) return;
 
-  paletaActual = entrada.colors;
-  renderizarPaleta(entrada.colors);
-  selectorTamanio.value = String(entrada.colors.length);
+  paletaActual = entrada.colors.map((color) => ({
+    ...color,
+    bloqueado: Boolean(color.bloqueado),
+  }));
+  renderizarPaleta(paletaActual);
+  selectorTamanio.value = String(paletaActual.length);
   mostrarToast("Paleta cargada");
 }
 
@@ -244,9 +310,24 @@ function mostrarToast(mensaje) {
 function manejarClicGenerar() {
   const tamanio = parseInt(selectorTamanio.value, 10);
   const paleta = generarPaleta(tamanio);
+  const todosBloqueados =
+    paleta.length > 0 && paleta.every((color) => color.bloqueado);
+
+  if (todosBloqueados && paleta.length === paletaActual.length) {
+    mostrarToast("Todos los colores están bloqueados");
+    return;
+  }
+
   paletaActual = paleta;
   renderizarPaleta(paleta);
   mostrarToast(`Paleta de ${tamanio} colores generada`);
+}
+
+function manejarClicPaleta(evento) {
+  const botonBloqueo = evento.target.closest("[data-accion='bloquear']");
+  if (!botonBloqueo) return;
+
+  alternarBloqueo(Number(botonBloqueo.dataset.indice));
 }
 
 function manejarClicGuardar() {
@@ -274,6 +355,7 @@ function manejarClicListaGuardadas(evento) {
 
 botonGenerar.addEventListener("click", manejarClicGenerar);
 botonGuardar.addEventListener("click", manejarClicGuardar);
+contenedorPaleta.addEventListener("click", manejarClicPaleta);
 listaGuardadas.addEventListener("click", manejarClicListaGuardadas);
 
 /* ---- Estado inicial ----
